@@ -1,4 +1,3 @@
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -19,56 +18,59 @@ public class Encryption extends JFrame {
         this.setLayout(new GridLayout(3, 1));
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
 
+
         setComponent();
         addComponent();
         this.show();
 
     }
 
+    class myJPanel extends JPanel {
+        JLabel j = new JLabel();
+        JProgressBar p = new JProgressBar();
+
+        myJPanel() {
+            setSize(800,50);
+            setLayout(new GridLayout(1, 2));
+            p.setForeground(new Color(112, 173, 71));
+            this.add(j);
+            this.add(p);
+        }
+    }
+
     private final JPanel p1 = new JPanel();
     private final JPanel p2 = new JPanel();
     private final JPanel p3 = new JPanel();
 
-    private final JPanel p2_1 = new JPanel();
-    private final JPanel p2_2 = new JPanel();
 
     private final JButton fileChooser = new JButton("选择文件");
     private final JButton en_decode = new JButton("加/解密");
 
-    private final JLabel[] fileName = new JLabel[3];
 
-    private JProgressBar[] progress = new JProgressBar[3];
+    private myJPanel[] progress = new myJPanel[30];
 
     private final JTextField key = new JTextField("24位密钥(支持数字和字母)");
 
-    private final File[] file = new File[3];
+    private final File[] file = new File[30];
 
     JTextArea message = new JTextArea();
+
+    Box vBox = Box.createVerticalBox();
 
 
     private void addComponent() {
 
-        for (int i = 0; i < 3; i++) {
-            fileName[i] = new JLabel("", JLabel.CENTER);
-            fileName[i].setFont(new Font(null, Font.BOLD, 24));
-            p2_1.add(fileName[i], CENTER_ALIGNMENT);
-        }
+        JScrollPane jScrollPane = new JScrollPane(vBox);
 
-        for (int i = 0; i < 3; i++) {
-            progress[i] = new JProgressBar(0, 0, 100);
-            progress[i].setForeground(new Color(0, 112, 192));
-            progress[i].setVisible(false);
-            p2_2.add(progress[i], CENTER_ALIGNMENT);
-        }
+        p2.add(jScrollPane);
 
-        p2.add(p2_1);
-        p2.add(p2_2);
 
         p1.add(fileChooser);
         p1.add(key);
         p1.add(en_decode);
 
         p3.add(message);
+
 
         this.add(p1);
         this.add(p2);
@@ -77,16 +79,17 @@ public class Encryption extends JFrame {
     }
 
     private void setComponent() {
+
         p1.setLayout(new GridLayout(1, 3));
 
 
         p2.setLayout(new GridLayout(1, 1));
-        p2_1.setLayout(new GridLayout(3, 1));
-        p2_2.setLayout(new GridLayout(3, 1));
+//        p2_1.setLayout(new GridLayout(3, 1));
+//        p2_2.setLayout(new GridLayout(3, 1));
 
         p3.setLayout(new GridLayout(1, 1));
 
-        Font f=new Font(null,Font.BOLD,30);
+        Font f = new Font(null, Font.BOLD, 30);
         en_decode.setFont(f);
         fileChooser.setFont(f);
 
@@ -110,7 +113,7 @@ public class Encryption extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 switch (button.getText()) {
                     case "选择文件": {
-                        for (int i = 0; i < 3; i++) {
+                        for (int i = 0; i < 30; i++) {
                             if (file[i] == null) {
                                 JFileChooser jfc = new JFileChooser();
                                 jfc.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -119,15 +122,35 @@ public class Encryption extends JFrame {
 //                               取消选择
                                 if (f == null) return;
                                 else {
-                                    for (int j = 0; j < 3; j++) {
-                                        if (fileName[j].getText().equals(f.getName())) {
+                                    int j = 0;
+                                    while (j < 30) {
+                                        if (progress[j++] == null) continue;
+                                        j--;
+                                        if (progress[j++].j.getText().equals(f.getName())) {
                                             JOptionPane.showMessageDialog(null, "文件已存在！");
                                             return;
+
                                         }
                                     }
+
+                                    myJPanel m = new myJPanel();
+                                    m.j.setText(f.getName());
+                                    m.setVisible(true);
+//                                    pack();
+//                                    setSize(800,600);
+
+                                    vBox.add(m);
+
+
+
+                                    vBox.revalidate();
+
                                     file[i] = f;
-                                    fileName[i].setText(f.getName());
+                                    progress[i] = m;
+//                                    fileName[i].setText(f.getName());]
+
                                     return;
+
 
                                 }
                             }
@@ -138,7 +161,7 @@ public class Encryption extends JFrame {
 
                     case "加/解密": {
                         int n = 0;
-                        for (int i = 0; i < 3; i++) if (file[i] != null) n++;
+                        for (int i = 0; i < 30; i++) if (file[i] != null) n++;
                         if (n < 1) {
                             JOptionPane.showMessageDialog(null, "请选择文件");
                             break;
@@ -146,9 +169,9 @@ public class Encryption extends JFrame {
                             JOptionPane.showMessageDialog(null, "密钥不合法!");
                             break;
                         } else {
-                            for (int i = 0; i < 3; i++) {
+                            for (int i = 0; i < 30; i++) {
                                 if (file[i] != null) {
-                                    progress[i].setVisible(true);
+//                                    progress[i].setVisible(true);
                                     D_En_code_progress p = new D_En_code_progress();
                                     p.setFile(file[i], i);
                                     p.start();
@@ -206,10 +229,10 @@ public class Encryption extends JFrame {
 
 //                    延时
                     Random rand = new Random();
-                    while (progress[f_id].getValue() != 100) {
+                    while (progress[f_id].p.getValue() != 100) {
                         try {
                             Thread.sleep(rand.nextInt(3) * 1000);
-                            progress[f_id].setValue(progress[f_id].getValue() + 10);
+                            progress[f_id].p.setValue(progress[f_id].p.getValue() + 10);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
@@ -239,10 +262,10 @@ public class Encryption extends JFrame {
 
 //                    延时
                     Random rand = new Random();
-                    while (progress[f_id].getValue() != 100) {
+                    while (progress[f_id].p.getValue() != 100) {
                         try {
                             Thread.sleep(rand.nextInt(3) * 1000);
-                            progress[f_id].setValue(progress[f_id].getValue() + 10);
+                            progress[f_id].p.setValue(progress[f_id].p.getValue() + 10);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
@@ -265,10 +288,10 @@ public class Encryption extends JFrame {
         }
 
         private void init() {
-            fileName[f_id].setText("");
+//            vBox.remove();/
+            vBox.remove(progress[f_id]);
+            progress[f_id]=null;
             file[f_id] = null;
-            progress[f_id].setValue(0);
-            progress[f_id].setVisible(false);
         }
     }
 }
